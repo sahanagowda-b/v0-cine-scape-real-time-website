@@ -1,46 +1,14 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { getTrendingMovies, getPosterUrl } from "@/lib/tmdb"
+import { Header } from "@/components/header"
 
 export default async function HomePage() {
   const { results: trendingMovies } = await getTrendingMovies("week")
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="text-2xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                CineScape
-              </div>
-            </Link>
-
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/" className="text-foreground hover:text-primary transition-colors font-medium">
-                Discover
-              </Link>
-              <Link href="/search" className="text-foreground hover:text-primary transition-colors font-medium">
-                Search
-              </Link>
-            </nav>
-
-            <div className="flex items-center gap-4">
-              <Link href="/auth/login">
-                <Button variant="outline" size="sm">
-                  Login
-                </Button>
-              </Link>
-              <Link href="/auth/signup">
-                <Button size="sm" className="bg-gradient-to-r from-primary to-accent hover:opacity-90">
-                  Sign Up
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 md:py-32">

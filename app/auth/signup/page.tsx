@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
@@ -18,11 +18,24 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [rateLimitCountdown, setRateLimitCountdown] = useState(0)
   const router = useRouter()
+
+  useEffect(() => {
+    if (rateLimitCountdown <= 0) return
+    const timer = setInterval(() => {
+      setRateLimitCountdown((prev) => Math.max(0, prev - 1))
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [rateLimitCountdown])
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+
+    if (rateLimitCountdown > 0) {
+      return
+    }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match")
@@ -56,14 +69,16 @@ export default function SignupPage() {
         console.error("[v0] Signup error:", error)
 
         if (error.message.includes("rate limit") || error.status === 429) {
+          setRateLimitCountdown(60)
           setError(
-            "Too many signup attempts. Please try again in a few minutes, or check if you already have an account and try logging in instead.",
+            "Supabase rate limit reached. This protects against abuse. Please either: (1) Wait 60 seconds and try with a DIFFERENT email address, or (2) Login if you already have an account.",
           )
         } else if (error.message.includes("already registered")) {
-          setError("This email is already registered. Please try logging in instead.")
+          setError("This email is already registered. Please login instead using the button below.")
         } else {
           setError(error.message)
         }
+        setIsLoading(false)
         return
       }
 
@@ -134,7 +149,7 @@ export default function SignupPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
-                  disabled={isLoading}
+                  disabled={isLoading || rateLimitCountdown > 0}
                 />
               </div>
 
@@ -146,7 +161,7 @@ export default function SignupPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  disabled={isLoading}
+                  disabled={isLoading || rateLimitCountdown > 0}
                   minLength={6}
                 />
                 <p className="text-xs text-muted-foreground mt-1">At least 6 characters</p>
@@ -160,28 +175,47 @@ export default function SignupPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  disabled={isLoading}
+                  disabled={isLoading || rateLimitCountdown > 0}
                 />
               </div>
 
               {error && (
-                <div className="p-3 bg-destructive/10 border border-destructive rounded text-destructive text-sm">
-                  {error}
+                <div className="p-4 bg-destructive/10 border border-destructive rounded text-destructive text-sm space-y-3">
+                  <p>{error}</p>
+                  {(error.includes("rate limit") || error.includes("already registered")) && (
+                    <Link href="/auth/login">
+                      <Button type="button" variant="outline" className="w-full bg-transparent">
+                        Go to Login Page
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               )}
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating account..." : "Sign Up"}
+              <Button type="submit" className="w-full" disabled={isLoading || rateLimitCountdown > 0}>
+                {isLoading
+                  ? "Creating account..."
+                  : rateLimitCountdown > 0
+                    ? `Try again in ${rateLimitCountdown}s`
+                    : "Sign Up"}
               </Button>
             </form>
           )}
 
           <p className="text-center text-muted-foreground mt-6">
             Already have an account?{" "}
-            <Link href="/auth/login" className="text-primary hover:underline">
-              Sign in
+            <Link href="/auth/login" className="text-primary hover:underline font-medium">
+              Sign in here
             </Link>
           </p>
+
+          <div className="mt-4 p-3 bg-muted/50 rounded text-xs text-muted-foreground">
+            <p className="font-medium mb-1">Tip:</p>
+            <p>
+              If you're testing, use different email addresses for each signup attempt. Supabase limits signup requests
+              to prevent abuse.
+            </p>
+          </div>
         </Card>
       </div>
     </div>
