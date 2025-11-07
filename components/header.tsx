@@ -1,15 +1,19 @@
 "use client"
 
+import type React from "react"
+
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Input } from "@/components/ui/input"
 
 export function Header() {
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
   const router = useRouter()
 
   useEffect(() => {
@@ -46,17 +50,49 @@ export function Header() {
     window.location.href = "/"
   }
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+      setSearchQuery("")
+    }
+  }
+
   return (
     <header className="bg-card border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <Link href="/" className="flex items-center gap-2">
+        <div className="flex justify-between items-center h-16 gap-4">
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <div className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               CineScape
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-4">
+            <div className="relative w-full">
+              <Input
+                type="text"
+                placeholder="Search movies..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pr-10"
+              />
+              <button
+                type="submit"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </form>
+
           <nav className="hidden md:flex items-center gap-6">
             <Link href="/" className="text-foreground hover:text-primary transition-colors font-medium">
               Discover
@@ -73,7 +109,6 @@ export function Header() {
             )}
           </nav>
 
-          {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center gap-4">
             {!isLoading && (
               <>
@@ -107,7 +142,6 @@ export function Header() {
             )}
           </div>
 
-          {/* Mobile Menu */}
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="sm">
@@ -118,6 +152,31 @@ export function Header() {
             </SheetTrigger>
             <SheetContent>
               <div className="flex flex-col gap-4 mt-8">
+                <form onSubmit={handleSearch} className="mb-4">
+                  <div className="relative w-full">
+                    <Input
+                      type="text"
+                      placeholder="Search movies..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pr-10"
+                    />
+                    <button
+                      type="submit"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </form>
+
                 <Link href="/" className="text-lg font-medium text-foreground hover:text-primary">
                   Discover
                 </Link>
