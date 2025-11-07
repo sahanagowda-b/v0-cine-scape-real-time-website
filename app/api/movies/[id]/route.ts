@@ -4,14 +4,17 @@ import { getMovieDetails } from "@/lib/tmdb"
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  console.log("[v0] API Route START - Params:", params)
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  console.log("[v0] API Route START")
 
   try {
-    const movieId = Number.parseInt(params.id)
+    const { id } = await context.params
+    console.log("[v0] API Route - Movie ID from params:", id)
+
+    const movieId = Number.parseInt(id)
 
     if (isNaN(movieId)) {
-      console.error("[v0] API Route: Invalid movie ID:", params.id)
+      console.error("[v0] API Route: Invalid movie ID:", id)
       return NextResponse.json({ error: "Invalid movie ID" }, { status: 400 })
     }
 
