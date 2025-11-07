@@ -87,6 +87,18 @@ export default function LoginPage() {
         <Card className="p-8">
           <h1 className="text-2xl font-bold text-foreground mb-6 text-center">Welcome Back</h1>
 
+          <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-lg">
+            <p className="text-sm font-medium text-primary mb-2">Quick Test Login:</p>
+            <div className="text-xs text-primary/80 space-y-1">
+              <p>
+                Email: <span className="font-mono font-semibold">123@gmail.com</span>
+              </p>
+              <p>
+                Password: <span className="font-mono font-semibold">123456</span>
+              </p>
+            </div>
+          </div>
+
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">Email</label>

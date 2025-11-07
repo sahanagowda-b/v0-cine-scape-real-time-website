@@ -134,6 +134,24 @@ export default function SignupPage() {
         <Card className="p-8">
           <h1 className="text-2xl font-bold text-foreground mb-6 text-center">Create Account</h1>
 
+          <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-lg">
+            <p className="text-sm font-medium text-primary mb-2">Want to explore first?</p>
+            <div className="text-xs text-primary/80 space-y-1 mb-2">
+              <p>Login with test account:</p>
+              <p>
+                Email: <span className="font-mono font-semibold">123@gmail.com</span>
+              </p>
+              <p>
+                Password: <span className="font-mono font-semibold">123456</span>
+              </p>
+            </div>
+            <Link href="/auth/login">
+              <Button type="button" size="sm" variant="outline" className="w-full text-xs bg-transparent">
+                Go to Login
+              </Button>
+            </Link>
+          </div>
+
           {success ? (
             <div className="p-4 bg-green-500/10 border border-green-500 rounded text-green-500 text-center">
               <p className="font-medium">Account created successfully!</p>
