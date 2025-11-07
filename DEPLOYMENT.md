@@ -34,7 +34,7 @@ Before deploying, ensure you have:
    - **Output directory**: `.next`
 
 5. Add environment variables:
-   - `NEXT_PUBLIC_TMDB_API_KEY`: Your TMDB API key
+   - `TMDB_ACCESS_TOKEN`: Your TMDB API access token (Bearer token)
    - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase URL
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anon key
    - `NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL`: `https://your-vercel-url.vercel.app`
@@ -73,7 +73,7 @@ Before deploying, ensure you have:
 2. Click "New Project" > "Deploy from GitHub"
 3. Select your repository
 4. Configure environment variables:
-   - `NEXT_PUBLIC_TMDB_API_KEY`: Your TMDB key
+   - `TMDB_ACCESS_TOKEN`: Your TMDB key
    - `SOCKET_PORT`: `3001`
 
 5. Add to your Vercel environment variables:
@@ -85,7 +85,7 @@ Before deploying, ensure you have:
 2. Run:
    \`\`\`bash
    heroku create cinescape-socket
-   heroku config:set NEXT_PUBLIC_TMDB_API_KEY=your_key
+   heroku config:set TMDB_ACCESS_TOKEN=your_token
    git push heroku main
    \`\`\`
 

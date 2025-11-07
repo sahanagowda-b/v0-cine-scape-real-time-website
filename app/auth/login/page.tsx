@@ -8,7 +8,7 @@ import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { createClientSupabaseClient } from "@/lib/supabase-client"
+import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 
 export default function LoginPage() {
@@ -24,22 +24,35 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const supabase = createClientSupabaseClient()
+      const supabase = createClient()
 
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log("[v0] Starting login process for:", email)
+
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
+      console.log("[v0] Login response:", { data, error })
+
       if (error) {
-        setError(error.message)
+        console.error("[v0] Login error:", error)
+        if (error.message.includes("Email not confirmed")) {
+          setError("Please check your email and click the confirmation link before logging in.")
+        } else if (error.message.includes("Invalid login credentials")) {
+          setError("Invalid email or password. Please check your credentials.")
+        } else {
+          setError(error.message)
+        }
         return
       }
 
+      console.log("[v0] Login successful, redirecting to home")
       router.push("/")
+      router.refresh()
     } catch (err) {
+      console.error("[v0] Login exception:", err)
       setError("An error occurred. Please try again.")
-      console.error(err)
     } finally {
       setIsLoading(false)
     }

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { createClientSupabaseClient } from "@/lib/supabase-client"
+import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 
@@ -11,20 +11,32 @@ export function Header() {
   const [isLoading, setIsLoading] = useState(true)
   const [mobileOpen, setMobileOpen] = useState(false)
   const router = useRouter()
-  const supabase = createClientSupabaseClient()
+  const supabase = createClient()
 
   useEffect(() => {
     const checkUser = async () => {
+      console.log("[v0] Checking user session in header")
       const {
         data: { user },
       } = await supabase.auth.getUser()
+      console.log("[v0] User session:", user)
       setUser(user)
       setIsLoading(false)
     }
     checkUser()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("[v0] Auth state changed:", _event, session?.user)
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
   }, [supabase])
 
   const handleLogout = async () => {
+    console.log("[v0] Logging out user")
     await supabase.auth.signOut()
     setUser(null)
     router.refresh()

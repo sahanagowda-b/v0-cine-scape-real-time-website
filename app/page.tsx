@@ -1,42 +1,10 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { getTrendingMovies, getPosterUrl } from "@/lib/tmdb"
 
-const trendingMovies = [
-  {
-    id: 1,
-    title: "The Cinematic Revolution",
-    overview: "A groundbreaking film about cinema itself",
-    poster_path: "/movie-poster.jpg",
-    release_date: "2024-01-15",
-    vote_average: 8.5,
-  },
-  {
-    id: 2,
-    title: "Digital Dreams",
-    overview: "An exploration of virtual reality and human connection",
-    poster_path: "/movie-poster.jpg",
-    release_date: "2024-02-20",
-    vote_average: 7.9,
-  },
-  {
-    id: 3,
-    title: "Beyond Horizons",
-    overview: "Epic space adventure with stunning visuals",
-    poster_path: "/movie-poster.jpg",
-    release_date: "2024-03-10",
-    vote_average: 8.2,
-  },
-  {
-    id: 4,
-    title: "Urban Legends",
-    overview: "Mysterious tale set in a modern metropolis",
-    poster_path: "/movie-poster.jpg",
-    release_date: "2024-04-05",
-    vote_average: 7.7,
-  },
-]
+export default async function HomePage() {
+  const { results: trendingMovies } = await getTrendingMovies("week")
 
-export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -120,12 +88,12 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {trendingMovies.map((movie) => (
+            {trendingMovies.slice(0, 8).map((movie) => (
               <Link key={movie.id} href={`/movie/${movie.id}`}>
                 <div className="overflow-hidden hover:shadow-2xl transition-all duration-300 cursor-pointer h-full rounded-xl border border-border bg-card hover:border-primary/50 hover:-translate-y-1">
                   <div className="relative group">
                     <img
-                      src={movie.poster_path || "/placeholder.svg"}
+                      src={getPosterUrl(movie.poster_path, "w500") || "/placeholder.svg?height=750&width=500"}
                       alt={movie.title}
                       className="w-full aspect-[2/3] object-cover group-hover:scale-110 transition-transform duration-300"
                     />

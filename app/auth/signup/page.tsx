@@ -8,7 +8,7 @@ import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { createClientSupabaseClient } from "@/lib/supabase-client"
+import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 
 export default function SignupPage() {
@@ -37,26 +37,35 @@ export default function SignupPage() {
     setIsLoading(true)
 
     try {
-      const supabase = createClientSupabaseClient()
+      const supabase = createClient()
 
-      const { error } = await supabase.auth.signUp({
+      console.log("[v0] Starting signup process for:", email)
+
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || window.location.origin,
-        },
       })
 
+      console.log("[v0] Signup response:", { data, error })
+
       if (error) {
+        console.error("[v0] Signup error:", error)
         setError(error.message)
         return
       }
 
-      setSuccess(true)
-      setTimeout(() => router.push("/auth/login"), 2000)
+      if (data.user && data.session) {
+        console.log("[v0] User signed up and logged in immediately")
+        router.push("/")
+        router.refresh()
+      } else {
+        // Email confirmation still enabled, redirect to success page
+        console.log("[v0] Email confirmation required")
+        router.push("/auth/sign-up-success")
+      }
     } catch (err) {
+      console.error("[v0] Signup exception:", err)
       setError("An error occurred. Please try again.")
-      console.error(err)
     } finally {
       setIsLoading(false)
     }

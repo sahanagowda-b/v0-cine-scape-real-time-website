@@ -2,6 +2,9 @@ const TMDB_BASE_URL = "https://api.themoviedb.org/3"
 const TMDB_ACCESS_TOKEN = process.env.TMDB_ACCESS_TOKEN
 const TMDB_API_KEY = process.env.TMDB_API_KEY
 
+console.log("[v0] TMDB Config - Has Access Token:", !!TMDB_ACCESS_TOKEN)
+console.log("[v0] TMDB Config - Has API Key:", !!TMDB_API_KEY)
+
 const DEMO_MOVIES = [
   {
     id: 550,
@@ -84,9 +87,10 @@ const DEMO_MOVIES = [
 ]
 
 function hasValidApiKey(): boolean {
-  const hasToken =
-    TMDB_ACCESS_TOKEN && TMDB_ACCESS_TOKEN !== "your_tmdb_access_token_here" && TMDB_ACCESS_TOKEN?.trim() !== ""
-  const hasKey = TMDB_API_KEY && TMDB_API_KEY !== "your_tmdb_api_key_here" && TMDB_API_KEY?.trim() !== ""
+  const hasToken = TMDB_ACCESS_TOKEN && TMDB_ACCESS_TOKEN.length > 20
+  const hasKey = TMDB_API_KEY && TMDB_API_KEY.length > 20
+
+  console.log("[v0] hasValidApiKey check - Token valid:", hasToken, "Key valid:", hasKey)
   return hasToken || hasKey
 }
 
@@ -196,40 +200,93 @@ export async function searchMovies(query: string): Promise<TrendingResponse> {
 }
 
 export async function getMovieDetails(movieId: number) {
+  console.log("[v0] getMovieDetails called for ID:", movieId)
+
   try {
-    if (!hasValidApiKey()) {
-      const demoMovie = DEMO_MOVIES.find((m) => m.id === movieId)
-      if (demoMovie) {
-        return {
-          ...demoMovie,
-          budget: 63000000,
-          revenue: 100853753,
-          credits: {
-            cast: [
-              { id: 1, name: "Brad Pitt", character: "Tyler Durden", profile_path: null },
-              { id: 2, name: "Edward Norton", character: "The Narrator", profile_path: null },
-            ],
-          },
-          videos: {
-            results: [{ id: "123", key: "BHE0Z7G5_54", type: "Trailer", site: "YouTube" }],
-          },
-        }
+    if (hasValidApiKey()) {
+      console.log("[v0] Valid API key found, fetching from TMDB API")
+      const url = buildUrl(`/movie/${movieId}`, { append_to_response: "credits,videos" })
+
+      console.log("[v0] Fetching from TMDB API...")
+
+      const res = await fetch(url, {
+        headers: getAuthHeader(),
+        next: { revalidate: 86400 },
+      })
+
+      console.log("[v0] TMDB API Response status:", res.status)
+
+      if (!res.ok) {
+        const errorText = await res.text()
+        console.error(`[v0] TMDB API error: ${res.status} ${res.statusText}`)
+        console.error("[v0] Error response:", errorText)
+        console.log("[v0] Falling back to demo data due to API error")
+      } else {
+        const data = await res.json()
+        console.log("[v0] Successfully fetched movie from API:", data.title || `ID ${movieId}`)
+        return data
       }
-      return null
+    } else {
+      console.log("[v0] No valid API key configured")
     }
 
-    const url = buildUrl(`/movie/${movieId}`, { append_to_response: "credits,videos" })
-    const res = await fetch(url, {
-      headers: getAuthHeader(),
-      next: { revalidate: 86400 },
-    })
-    if (!res.ok) {
-      console.error(`[CineScape] TMDB API error: ${res.status}`)
-      throw new Error("Failed to fetch movie details")
+    console.log("[v0] Using demo/placeholder data")
+    const demoMovie = DEMO_MOVIES.find((m) => m.id === movieId)
+
+    if (demoMovie) {
+      console.log("[v0] Found demo movie:", demoMovie.title)
+      return {
+        ...demoMovie,
+        genres: [
+          { id: 18, name: "Drama" },
+          { id: 53, name: "Thriller" },
+        ],
+        budget: 63000000,
+        revenue: 100853753,
+        runtime: 139,
+        credits: {
+          cast: [
+            { id: 1, name: "Brad Pitt", character: "Tyler Durden", profile_path: null },
+            { id: 2, name: "Edward Norton", character: "The Narrator", profile_path: null },
+            { id: 3, name: "Helena Bonham Carter", character: "Marla Singer", profile_path: null },
+          ],
+        },
+        videos: {
+          results: [{ id: "123", key: "SUXWAEX2jlg", type: "Trailer", site: "YouTube", name: "Official Trailer" }],
+        },
+      }
     }
-    return res.json()
+
+    console.log("[v0] Movie ID not in demo data, creating generic movie:", movieId)
+    return {
+      id: movieId,
+      title: `Movie #${movieId}`,
+      overview: "This is a placeholder movie. Please configure your TMDB API credentials to see real movie data.",
+      poster_path: `/placeholder.svg?height=500&width=342&query=movie+poster`,
+      backdrop_path: `/placeholder.svg?height=720&width=1280&query=movie+backdrop`,
+      release_date: "2024-01-01",
+      vote_average: 7.5,
+      vote_count: 1000,
+      genres: [
+        { id: 18, name: "Drama" },
+        { id: 28, name: "Action" },
+      ],
+      budget: 50000000,
+      revenue: 150000000,
+      runtime: 120,
+      credits: {
+        cast: [
+          { id: 1, name: "Actor One", character: "Main Character", profile_path: null },
+          { id: 2, name: "Actor Two", character: "Supporting Role", profile_path: null },
+          { id: 3, name: "Actor Three", character: "Villain", profile_path: null },
+        ],
+      },
+      videos: {
+        results: [],
+      },
+    }
   } catch (error) {
-    console.error("[CineScape] Movie details error:", error)
+    console.error("[v0] Movie details error:", error)
     return null
   }
 }

@@ -5,8 +5,7 @@ import { useParams } from "next/navigation"
 import { Header } from "@/components/header"
 import { MovieDetailsHero } from "@/components/movie-details-hero"
 import { MovieDetailsContent } from "@/components/movie-details-content"
-import { getMovieDetails } from "@/lib/tmdb"
-import { createClientSupabaseClient } from "@/lib/supabase-client"
+import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
@@ -17,36 +16,65 @@ export default function MovieDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [isInWatchlist, setIsInWatchlist] = useState(false)
-  const [showTrailer, setShowTrailer] = useState(false)
-  const supabase = createClientSupabaseClient()
+  const supabase = createClient()
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log("[v0] Fetching movie details for ID:", movieId)
       setIsLoading(true)
-      const movieData = await getMovieDetails(movieId)
-      setMovie(movieData)
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      setUser(user)
+      try {
+        const response = await fetch(`/api/movies/${movieId}`)
 
-      if (user) {
-        const { data: watchlist } = await supabase
-          .from("watchlist")
-          .select("*")
-          .eq("user_id", user.id)
-          .eq("movie_id", movieId)
-          .single()
+        if (!response.ok) {
+          console.error("[v0] API response not OK:", response.status)
+          setMovie(null)
+          setIsLoading(false)
+          return
+        }
 
-        setIsInWatchlist(!!watchlist)
+        const movieData = await response.json()
+        console.log("[v0] Movie data received:", movieData)
+
+        if (movieData) {
+          setMovie(movieData)
+        } else {
+          console.error("[v0] No movie data returned for ID:", movieId)
+          setMovie(null)
+        }
+      } catch (error) {
+        console.error("[v0] Error fetching movie:", error)
+        setMovie(null)
+      }
+
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        console.log("[v0] User:", user)
+        setUser(user)
+
+        if (user && movieId) {
+          const { data: watchlist } = await supabase
+            .from("watchlist")
+            .select("*")
+            .eq("user_id", user.id)
+            .eq("movie_id", movieId)
+            .single()
+
+          setIsInWatchlist(!!watchlist)
+        }
+      } catch (error) {
+        console.error("[v0] Error checking user/watchlist:", error)
       }
 
       setIsLoading(false)
     }
 
-    fetchData()
-  }, [movieId, supabase])
+    if (movieId) {
+      fetchData()
+    }
+  }, [movieId])
 
   const handleWatchlistToggle = async () => {
     if (!user) {
@@ -57,15 +85,16 @@ export default function MovieDetailPage() {
     try {
       if (isInWatchlist) {
         await supabase.from("watchlist").delete().eq("user_id", user.id).eq("movie_id", movieId)
+        setIsInWatchlist(false)
       } else {
         await supabase.from("watchlist").insert({
           user_id: user.id,
           movie_id: movieId,
         })
+        setIsInWatchlist(true)
       }
-      setIsInWatchlist(!isInWatchlist)
     } catch (error) {
-      console.error("Error updating watchlist:", error)
+      console.error("[v0] Error updating watchlist:", error)
     }
   }
 
@@ -74,7 +103,10 @@ export default function MovieDetailPage() {
       <div className="min-h-screen bg-background">
         <Header />
         <div className="flex items-center justify-center h-96">
-          <p className="text-muted-foreground">Loading...</p>
+          <div className="text-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+            <p className="text-muted-foreground mt-4">Loading movie details...</p>
+          </div>
         </div>
       </div>
     )
@@ -85,10 +117,16 @@ export default function MovieDetailPage() {
       <div className="min-h-screen bg-background">
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <p className="text-muted-foreground mb-4">Movie not found</p>
-          <Link href="/">
-            <Button>Go Back</Button>
-          </Link>
+          <div className="text-center">
+            <h1 className="text-3xl font-bold mb-4">Movie not found</h1>
+            <p className="text-muted-foreground mb-6">
+              The movie you're looking for doesn't exist or couldn't be loaded.
+            </p>
+            <p className="text-sm text-muted-foreground mb-8">Movie ID: {movieId}</p>
+            <Link href="/">
+              <Button size="lg">Go Back to Home</Button>
+            </Link>
+          </div>
         </div>
       </div>
     )
@@ -102,7 +140,7 @@ export default function MovieDetailPage() {
         <MovieDetailsHero
           movie={movie}
           isInWatchlist={isInWatchlist}
-          onWatchlistToggle={handleWatchlistToggle}
+          onWatchlistToggle={user ? handleWatchlistToggle : undefined}
           isLoading={isLoading}
         />
         <MovieDetailsContent movie={movie} genres={movie.genres || []} />

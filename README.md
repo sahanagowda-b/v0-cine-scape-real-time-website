@@ -41,12 +41,13 @@ A full-stack Next.js application for discovering movies with real-time trending 
 
 2. **Configure environment variables**:
    - Copy `.env.example` to `.env.local`
-   - Add your TMDB API key
+   - Add your TMDB API access token
    - Add your Supabase credentials
 
 3. **Setup Supabase Database**:
    - Go to your Supabase project
    - Run the SQL script from `scripts/01-setup-schema.sql` in the SQL editor
+   - Run `scripts/02-fix-rls-movies.sql` to enable RLS on movies table
    - This creates all necessary tables and RLS policies
 
 4. **Run the development server**:
@@ -97,6 +98,7 @@ cinescape/
 │   └── api-client.ts       # API request helpers
 ├── scripts/                 # Utility scripts
 │   ├── 01-setup-schema.sql # Database schema
+│   ├── 02-fix-rls-movies.sql # Fix RLS on movies table
 │   └── socket-server.js    # Socket.io server
 └── public/                 # Static assets
 \`\`\`
@@ -148,7 +150,7 @@ All tables have Row-Level Security (RLS) enabled to protect user privacy.
 
 3. **Set Environment Variables in Vercel**:
    - Go to Settings > Environment Variables
-   - Add: `NEXT_PUBLIC_TMDB_API_KEY`
+   - Add: `TMDB_ACCESS_TOKEN` (your TMDB API access token)
    - Add: `NEXT_PUBLIC_SUPABASE_URL`
    - Add: `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - Add: `NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL` (set to your Vercel URL)
@@ -177,6 +179,31 @@ For production real-time updates, options include:
 - **Database Indexing**: Optimized queries with database indexes
 - **Component Splitting**: Lazy loading and code splitting
 - **Security Headers**: CSP, X-Frame-Options, and more
+
+## Troubleshooting
+
+### Authentication Issues
+
+See `AUTH_TROUBLESHOOTING.md` for detailed solutions to:
+- Email rate limit exceeded errors
+- Users unable to login after signup
+- Email confirmation setup
+- RLS warnings and security
+
+**Quick Fix**: Disable email confirmation in Supabase Dashboard (Authentication → Providers → Email → Toggle OFF "Confirm email")
+
+### TMDB API Issues
+
+- Verify `TMDB_ACCESS_TOKEN` is set in environment variables
+- Check the token has correct permissions
+- App uses demo data as fallback if API unavailable
+
+### Supabase Connection Issues
+
+- Verify all environment variables are set correctly
+- Check Supabase project is active and not paused
+- Review RLS policies if data isn't loading
+- Run both SQL migration scripts in order
 
 ## Contributing
 

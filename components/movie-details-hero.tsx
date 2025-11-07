@@ -53,11 +53,12 @@ export function MovieDetailsHero({
 
         <div className="flex-1 flex flex-col justify-end">
           <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-3 text-balance">{movie.title}</h1>
+
           <div className="flex flex-wrap items-center gap-4 mb-6">
             <div className="flex items-center gap-2">
               <span className="text-2xl font-bold text-accent">★</span>
               <span className="text-foreground font-semibold">{movie.vote_average?.toFixed(1) || "N/A"}</span>
-              <span className="text-muted-foreground text-sm">({movie.vote_count?.toLocaleString()})</span>
+              <span className="text-muted-foreground text-sm">({movie.vote_count?.toLocaleString() || 0})</span>
             </div>
             {movie.release_date && (
               <span className="text-muted-foreground">{new Date(movie.release_date).getFullYear()}</span>
