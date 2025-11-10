@@ -70,7 +70,7 @@ For real-time movie trending updates:
 
 ## Project Structure
 
-\`\`\`
+```bash
 cinescape/
 ├── app/                      # Next.js app directory
 │   ├── page.tsx             # Landing page with trending movies
@@ -83,25 +83,26 @@ cinescape/
 │   ├── api/                 # API routes
 │   └── layout.tsx           # Root layout with Socket.io
 ├── components/              # React components
-│   ├── ui/                 # shadcn UI components
-│   ├── header.tsx          # Navigation header
-│   ├── movie-card.tsx      # Movie grid card
-│   ├── search-bar.tsx      # Search component
-│   ├── movie-details-hero.tsx    # Movie details hero
-│   ├── movie-details-content.tsx # Movie details content
-│   └── trending-updates.tsx      # Real-time notification
+│   ├── ui/                  # shadcn UI components
+│   ├── header.tsx           # Navigation header
+│   ├── movie-card.tsx       # Movie grid card
+│   ├── search-bar.tsx       # Search component
+│   ├── movie-details-hero.tsx       # Movie details hero
+│   ├── movie-details-content.tsx    # Movie details content
+│   └── trending-updates.tsx         # Real-time notification
 ├── lib/                     # Utilities and helpers
-│   ├── tmdb.ts             # TMDB API client
-│   ├── supabase-client.ts  # Supabase browser client
-│   ├── supabase-server.ts  # Supabase server client
-│   ├── socket.ts           # Socket.io client
-│   └── api-client.ts       # API request helpers
+│   ├── tmdb.ts              # TMDB API client
+│   ├── supabase-client.ts   # Supabase browser client
+│   ├── supabase-server.ts   # Supabase server client
+│   ├── socket.ts            # Socket.io client
+│   └── api-client.ts        # API request helpers
 ├── scripts/                 # Utility scripts
-│   ├── 01-setup-schema.sql # Database schema
+│   ├── 01-setup-schema.sql  # Database schema
 │   ├── 02-fix-rls-movies.sql # Fix RLS on movies table
-│   └── socket-server.js    # Socket.io server
-└── public/                 # Static assets
-\`\`\`
+│   └── socket-server.js     # Socket.io server
+└── public/                  # Static assets
+```
+
 
 ## Database Schema
 
